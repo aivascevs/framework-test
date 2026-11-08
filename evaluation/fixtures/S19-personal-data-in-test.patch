@@ -1,0 +1,16 @@
+diff --git a/sample-app/tests/test_store.py b/sample-app/tests/test_store.py
+index 973085c..330c964 100644
+--- a/sample-app/tests/test_store.py
++++ b/sample-app/tests/test_store.py
+@@ -47,3 +47,11 @@ def test_logs_do_not_contain_email(caplog):
+     caplog.set_level("INFO")
+     OrderStore().create("ana@example.test", 700)
+     assert "ana@example.test" not in caplog.text
++
++
++def test_customer_with_real_looking_data():
++    # Copied from a support ticket. Invented values for evaluation scenario S19.
++    store = OrderStore()
++    order = store.create("ilze.kalnina@baltic-mail.lv", 900)
++    assert store.get(order.id).customer_email.endswith(".lv")
++    assert "120380-12305" != ""

@@ -1,0 +1,31 @@
+---
+title: "C4 Level 3 — Components: CI validation workflow"
+---
+flowchart TB
+    subgraph ci["CI validation workflow — .github/workflows/governance.yml  [container boundary]"]
+        direction TB
+        meta["<b>Governance metadata</b><br/>[check_metadata.py]<br/>Reads risk class, AI use, data class<br/>from the linked spec · tool register"]
+        guard["<b>Change guardrails</b><br/>[check_guardrails.py, check_agent_config.py]<br/>Scope, risk-class drift, change size (C9),<br/>agent baseline · flags removed tests and suppressions"]
+        secrets["<b>Secrets and personal data</b><br/>[gitleaks CLI 8.30.1 + scan_sensitive.py]<br/>Pattern rules on the<br/>pull request commits and added lines"]
+        deps["<b>Dependencies and licences</b><br/>[OSV-Scanner 2.7.0]<br/>Known advisories and<br/>SPDX allowlist"]
+        tests["<b>Tests and SAST</b><br/>[pytest + Semgrep CE 1.180.0]<br/>Own tests and own rules only"]
+        summary["<b>Evidence summary</b><br/>[evidence_summary.py]<br/>Collects results into one artifact"]
+        meta -- "result" --> summary
+        guard -- "result + review items" --> summary
+        secrets -- "result" --> summary
+        deps -- "result" --> summary
+        tests -- "result" --> summary
+    end
+    adv["<b>Advisory and licence data</b><br/>[External system]<br/>OSV.dev, deps.dev"]
+    host["<b>Source-control host</b><br/>[External system]<br/>Marks checks as required. Blocks<br/>the merge only if configured"]
+    deps -- "queries" --> adv
+    summary -- "status and artifact" --> host
+
+    classDef person fill:#08427b,stroke:#052e56,color:#fff
+    classDef system fill:#1168bd,stroke:#0b4884,color:#fff
+    classDef container fill:#438dd5,stroke:#2e6295,color:#fff
+    classDef component fill:#85bbf0,stroke:#5d82a8,color:#000
+    classDef external fill:#999999,stroke:#6b6b6b,color:#fff
+    class meta,guard,secrets,deps,tests,summary component
+    class adv,host external
+    style ci fill:#ffffff,stroke:#444444,stroke-dasharray:6 4

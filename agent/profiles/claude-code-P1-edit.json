@@ -1,0 +1,6 @@
+{
+  "$comment": "Capability profile P1 Edit for Claude Code. Use: claude --settings agent/profiles/claude-code-P1-edit.json. Adds to .claude/settings.json: no shell commands, no web access.",
+  "permissions": {
+    "deny": ["Bash", "WebFetch", "WebSearch"]
+  }
+}

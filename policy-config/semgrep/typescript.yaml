@@ -1,0 +1,109 @@
+# C4 — Self-written Semgrep rules for TypeScript and JavaScript. Tests: tests/fixtures/semgrep/typescript.tsx
+# No Semgrep registry rules are copied here.
+rules:
+- id: ts-sql-built-from-strings
+  languages:
+  - typescript
+  - javascript
+  severity: ERROR
+  message: SQL text is built from string concatenation or a template literal with values. Pass values
+    as query parameters.
+  metadata:
+    cwe: CWE-89
+    control: C4
+    requirement: SEC
+  pattern-either:
+  - pattern: $DB.query("..." + $X, ...)
+  - pattern: $DB.query(`...${$X}...`, ...)
+  - pattern: $DB.execute("..." + $X, ...)
+  - pattern: $DB.execute(`...${$X}...`, ...)
+  - pattern: $DB.raw(`...${$X}...`, ...)
+- id: ts-eval
+  languages:
+  - typescript
+  - javascript
+  severity: ERROR
+  message: Dynamic code execution (eval / new Function). Remove it.
+  metadata:
+    cwe: CWE-95
+    control: C4
+    requirement: SEC
+  pattern-either:
+  - pattern: eval(...)
+  - pattern: new Function(...)
+- id: react-dangerously-set-inner-html
+  languages:
+  - typescript
+  - javascript
+  severity: WARNING
+  message: dangerouslySetInnerHTML renders raw HTML. Sanitise the value (e.g. DOMPurify) or render text
+    instead; record the decision in the review.
+  metadata:
+    cwe: CWE-79
+    control: C4
+    requirement: SEC
+  pattern: <$EL dangerouslySetInnerHTML={...} />
+- id: angular-bypass-security-trust
+  languages:
+  - typescript
+  severity: WARNING
+  message: DomSanitizer.bypassSecurityTrust* disables Angular's XSS protection. Only allowed with a reviewed,
+    documented reason.
+  metadata:
+    cwe: CWE-79
+    control: C4
+    requirement: SEC
+  pattern-regex: \bbypassSecurityTrust(Html|Script|Style|Url|ResourceUrl)\s*\(
+- id: ts-insecure-random
+  languages:
+  - typescript
+  - javascript
+  severity: WARNING
+  message: Math.random() is not cryptographically secure. For tokens, IDs or secrets use crypto.getRandomValues
+    / crypto.randomUUID.
+  metadata:
+    cwe: CWE-330
+    control: C4
+    requirement: SEC
+  pattern: Math.random()
+- id: ts-hardcoded-credential
+  languages:
+  - typescript
+  - javascript
+  severity: ERROR
+  message: A credential-like value is hard-coded. Read it from configuration or a secret store.
+  metadata:
+    cwe: CWE-798
+    control: C3
+    requirement: SEC
+  patterns:
+  - pattern-either:
+    - pattern: const $NAME = "...";
+    - pattern: let $NAME = "...";
+    - pattern: var $NAME = "...";
+    - pattern: $NAME = "...";
+  - pattern-not: const $NAME = "";
+  - metavariable-regex:
+      metavariable: $NAME
+      regex: (?i).*(password|passwd|pwd|secret|apikey|api_key|accesstoken|access_token|connectionstring).*
+- id: ts-personal-data-in-logs
+  languages:
+  - typescript
+  - javascript
+  severity: WARNING
+  message: A value that looks like personal data or a secret is written to a log. Mask it or remove it
+    (GDPR data minimisation; DATA# requirements).
+  metadata:
+    cwe: CWE-532
+    control: C3
+    requirement: DATA
+  patterns:
+  - pattern-either:
+    - pattern: $LOGGER.$METHOD(..., $ARG, ...)
+    - pattern: console.$METHOD(..., $ARG, ...)
+  - metavariable-regex:
+      metavariable: $METHOD
+      regex: ^(Log\w*|log|info|warn|error|debug|trace)$
+  - metavariable-regex:
+      metavariable: $ARG
+      regex: (?i).*(email|e_mail|phone|ssn|personalcode|personal_code|iban|password|token|birthdate|dateofbirth).*

@@ -1,0 +1,11 @@
+{
+  "$comment": "Capability profile P2 Execute for Claude Code. Use: claude --settings agent/profiles/claude-code-P2-execute.json. Adds a strict network allowlist: sandboxed commands reach only the allowedDomains, without a prompt for other hosts. strictAllowlist has no effect in the repository .claude/settings.json; it works from --settings, user or managed settings (Claude Code v2.1.219 or later).",
+  "permissions": {
+    "deny": ["WebSearch"]
+  },
+  "sandbox": {
+    "network": {
+      "strictAllowlist": true
+    }
+  }
+}

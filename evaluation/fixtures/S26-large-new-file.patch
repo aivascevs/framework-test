@@ -1,0 +1,351 @@
+diff --git a/sample-app/orders/report.py b/sample-app/orders/report.py
+new file mode 100644
+index 0000000..1f4a9e7
+--- /dev/null
++++ b/sample-app/orders/report.py
+@@ -0,0 +1,332 @@
++"""Order report helpers, generated in one pass (scenario S26)."""
++
++
++def report_line_0(order):
++    return f"{order.id};0"
++
++def report_line_1(order):
++    return f"{order.id};1"
++
++def report_line_2(order):
++    return f"{order.id};2"
++
++def report_line_3(order):
++    return f"{order.id};3"
++
++def report_line_4(order):
++    return f"{order.id};4"
++
++def report_line_5(order):
++    return f"{order.id};5"
++
++def report_line_6(order):
++    return f"{order.id};6"
++
++def report_line_7(order):
++    return f"{order.id};7"
++
++def report_line_8(order):
++    return f"{order.id};8"
++
++def report_line_9(order):
++    return f"{order.id};9"
++
++def report_line_10(order):
++    return f"{order.id};10"
++
++def report_line_11(order):
++    return f"{order.id};11"
++
++def report_line_12(order):
++    return f"{order.id};12"
++
++def report_line_13(order):
++    return f"{order.id};13"
++
++def report_line_14(order):
++    return f"{order.id};14"
++
++def report_line_15(order):
++    return f"{order.id};15"
++
++def report_line_16(order):
++    return f"{order.id};16"
++
++def report_line_17(order):
++    return f"{order.id};17"
++
++def report_line_18(order):
++    return f"{order.id};18"
++
++def report_line_19(order):
++    return f"{order.id};19"
++
++def report_line_20(order):
++    return f"{order.id};20"
++
++def report_line_21(order):
++    return f"{order.id};21"
++
++def report_line_22(order):
++    return f"{order.id};22"
++
++def report_line_23(order):
++    return f"{order.id};23"
++
++def report_line_24(order):
++    return f"{order.id};24"
++
++def report_line_25(order):
++    return f"{order.id};25"
++
++def report_line_26(order):
++    return f"{order.id};26"
++
++def report_line_27(order):
++    return f"{order.id};27"
++
++def report_line_28(order):
++    return f"{order.id};28"
++
++def report_line_29(order):
++    return f"{order.id};29"
++
++def report_line_30(order):
++    return f"{order.id};30"
++
++def report_line_31(order):
++    return f"{order.id};31"
++
++def report_line_32(order):
++    return f"{order.id};32"
++
++def report_line_33(order):
++    return f"{order.id};33"
++
++def report_line_34(order):
++    return f"{order.id};34"
++
++def report_line_35(order):
++    return f"{order.id};35"
++
++def report_line_36(order):
++    return f"{order.id};36"
++
++def report_line_37(order):
++    return f"{order.id};37"
++
++def report_line_38(order):
++    return f"{order.id};38"
++
++def report_line_39(order):
++    return f"{order.id};39"
++
++def report_line_40(order):
++    return f"{order.id};40"
++
++def report_line_41(order):
++    return f"{order.id};41"
++
++def report_line_42(order):
++    return f"{order.id};42"
++
++def report_line_43(order):
++    return f"{order.id};43"
++
++def report_line_44(order):
++    return f"{order.id};44"
++
++def report_line_45(order):
++    return f"{order.id};45"
++
++def report_line_46(order):
++    return f"{order.id};46"
++
++def report_line_47(order):
++    return f"{order.id};47"
++
++def report_line_48(order):
++    return f"{order.id};48"
++
++def report_line_49(order):
++    return f"{order.id};49"
++
++def report_line_50(order):
++    return f"{order.id};50"
++
++def report_line_51(order):
++    return f"{order.id};51"
++
++def report_line_52(order):
++    return f"{order.id};52"
++
++def report_line_53(order):
++    return f"{order.id};53"
++
++def report_line_54(order):
++    return f"{order.id};54"
++
++def report_line_55(order):
++    return f"{order.id};55"
++
++def report_line_56(order):
++    return f"{order.id};56"
++
++def report_line_57(order):
++    return f"{order.id};57"
++
++def report_line_58(order):
++    return f"{order.id};58"
++
++def report_line_59(order):
++    return f"{order.id};59"
++
++def report_line_60(order):
++    return f"{order.id};60"
++
++def report_line_61(order):
++    return f"{order.id};61"
++
++def report_line_62(order):
++    return f"{order.id};62"
++
++def report_line_63(order):
++    return f"{order.id};63"
++
++def report_line_64(order):
++    return f"{order.id};64"
++
++def report_line_65(order):
++    return f"{order.id};65"
++
++def report_line_66(order):
++    return f"{order.id};66"
++
++def report_line_67(order):
++    return f"{order.id};67"
++
++def report_line_68(order):
++    return f"{order.id};68"
++
++def report_line_69(order):
++    return f"{order.id};69"
++
++def report_line_70(order):
++    return f"{order.id};70"
++
++def report_line_71(order):
++    return f"{order.id};71"
++
++def report_line_72(order):
++    return f"{order.id};72"
++
++def report_line_73(order):
++    return f"{order.id};73"
++
++def report_line_74(order):
++    return f"{order.id};74"
++
++def report_line_75(order):
++    return f"{order.id};75"
++
++def report_line_76(order):
++    return f"{order.id};76"
++
++def report_line_77(order):
++    return f"{order.id};77"
++
++def report_line_78(order):
++    return f"{order.id};78"
++
++def report_line_79(order):
++    return f"{order.id};79"
++
++def report_line_80(order):
++    return f"{order.id};80"
++
++def report_line_81(order):
++    return f"{order.id};81"
++
++def report_line_82(order):
++    return f"{order.id};82"
++
++def report_line_83(order):
++    return f"{order.id};83"
++
++def report_line_84(order):
++    return f"{order.id};84"
++
++def report_line_85(order):
++    return f"{order.id};85"
++
++def report_line_86(order):
++    return f"{order.id};86"
++
++def report_line_87(order):
++    return f"{order.id};87"
++
++def report_line_88(order):
++    return f"{order.id};88"
++
++def report_line_89(order):
++    return f"{order.id};89"
++
++def report_line_90(order):
++    return f"{order.id};90"
++
++def report_line_91(order):
++    return f"{order.id};91"
++
++def report_line_92(order):
++    return f"{order.id};92"
++
++def report_line_93(order):
++    return f"{order.id};93"
++
++def report_line_94(order):
++    return f"{order.id};94"
++
++def report_line_95(order):
++    return f"{order.id};95"
++
++def report_line_96(order):
++    return f"{order.id};96"
++
++def report_line_97(order):
++    return f"{order.id};97"
++
++def report_line_98(order):
++    return f"{order.id};98"
++
++def report_line_99(order):
++    return f"{order.id};99"
++
++def report_line_100(order):
++    return f"{order.id};100"
++
++def report_line_101(order):
++    return f"{order.id};101"
++
++def report_line_102(order):
++    return f"{order.id};102"
++
++def report_line_103(order):
++    return f"{order.id};103"
++
++def report_line_104(order):
++    return f"{order.id};104"
++
++def report_line_105(order):
++    return f"{order.id};105"
++
++def report_line_106(order):
++    return f"{order.id};106"
++
++def report_line_107(order):
++    return f"{order.id};107"
++
++def report_line_108(order):
++    return f"{order.id};108"
++
++def report_line_109(order):
++    return f"{order.id};109"
+diff --git a/specs/001-sample-change/spec.md b/specs/001-sample-change/spec.md
+index 6c01fb2..0bc1235 100644
+--- a/specs/001-sample-change/spec.md
++++ b/specs/001-sample-change/spec.md
+@@ -48,7 +48,7 @@ Support staff need the total refunded amount for one customer. Add a store metho
+ | Item | Value |
+ |---|---|
+ | Capability profile | P1 Edit |
+-| Files the agent may change | `sample-app/orders/store.py`, `sample-app/tests/test_store.py` |
++| Files the agent may change | `sample-app/orders/store.py`, `sample-app/tests/test_store.py`, `sample-app/orders/report.py` |
+ | Commands the agent may run | none (the developer runs `pytest`) |
+ | Network access | none |
+ | Generated files | none |

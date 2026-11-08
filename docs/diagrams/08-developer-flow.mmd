@@ -1,0 +1,41 @@
+flowchart TB
+    subgraph s1["1 · Start — Claude Code or GitHub Copilot in VS Code"]
+        direction LR
+        a1(["Developer types<br/><code>/new-change &lt;task&gt;</code>"]) --> a2["<b>new-change</b> skill<br/>max. 4 questions · proposes risk,<br/>data class, profile · writes SEC / DATA / LIC<br/><b>change-splitter</b>: increments within the review budget"]
+        a2 --> g1{{"<b>Human gate 1</b><br/>approve the specification"}}
+    end
+    subgraph s2["2 · Plan and build — inside the agent"]
+        direction LR
+        b1["<b>governed-change</b> skill<br/>writes <code>.active-spec</code>"] --> b2["<b>planner</b> agent<br/>read-only"]
+        b2 --> g2{{"<b>Human gate 2</b><br/>approve the plan<br/><i>Claude Code: plan mode</i>"}}
+        g2 --> b3["Tests first, then code<br/><b>dependency-check</b> · <b>sensitive-data-guard</b><br/><i>CLI hooks: scope_guard, prompt_guard</i>"]
+        b3 --> b4["<b>reviewer</b> agent<br/>read-only findings<br/>+ sensitive-data scan"]
+    end
+    subgraph s3["3 · Pull request and CI — automatic"]
+        direction LR
+        c0["PR body:<br/><code>Specification: specs/…/spec.md</code><br/><code>Increment: INC-n</code>"] --> c1["Metadata<br/>read from the spec"]
+        c0 --> c2["Change guardrails<br/>scope · risk drift · size (C9) · agent config"]
+        c0 --> c3["Secrets and<br/>personal data"]
+        c0 --> c4["Dependencies<br/>and licences"]
+        c0 --> c5["Tests and SAST"]
+        c1 & c2 & c3 & c4 & c5 --> c6["Evidence summary<br/>review order · items for human review"]
+    end
+    subgraph s4["4 · Decide"]
+        direction LR
+        g3{{"<b>Human gate 3</b><br/>review and approve the PR<br/>highest risk first<br/>CODEOWNERS · ruleset"}} --> m1(["Merge"])
+        x1["<b>exception-drafter</b><br/>risk owner approves"] -.-> g3
+        x3["Weekly reminders<br/>exception expiry · tool review"] -.-> x1
+        x2["<b>rule-from-finding</b><br/>finding → new Semgrep rule + test in CI"]
+    end
+    s1 --> s2
+    s2 --> s3
+    s3 --> s4
+
+    classDef gate fill:#fff4d6,stroke:#b7791f,stroke-width:2px,color:#1a1a1a
+    classDef agent fill:#e6f0ff,stroke:#2b6cb0,color:#1a1a1a
+    classDef ci fill:#e6f6ec,stroke:#2f855a,color:#1a1a1a
+    classDef side fill:#f4f4f5,stroke:#71717a,stroke-dasharray:4 3,color:#1a1a1a
+    class g1,g2,g3 gate
+    class a2,b1,b2,b3,b4 agent
+    class c0,c1,c2,c3,c4,c5,c6 ci
+    class x1,x2,x3 side

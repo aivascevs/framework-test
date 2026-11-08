@@ -1,0 +1,53 @@
+# C9 — Reviewability gate: the change budget.
+#
+# Principle 7: delegate only up to the reviewing capability. A pull request must
+# stay small enough that a qualified reviewer can read all of it. CI
+# (scripts/check_guardrails.py, job "Change guardrails") fails a pull request
+# over the budget unless an approved exception record covers it.
+#
+# Changed lines = added + deleted lines, without the excluded paths below.
+# Line counts only approximate review effort. Each team sets its own values.
+# Rationale for the defaults: reviews lose effectiveness above roughly 200-400
+# lines per session (see docs/thesis-alignment.md, C9). Higher risk gets a
+# smaller budget, because the review must be deeper.
+version: 1
+
+budget:                     # per pull request, by declared risk class
+  Routine:
+    max_changed_lines: 400
+    max_files: 20
+  Elevated:
+    max_changed_lines: 400
+    max_files: 15
+  High impact:
+    max_changed_lines: 200
+    max_files: 8
+  Restricted:               # no AI delegation without an exception (C2)
+    max_changed_lines: 0
+    max_files: 0
+
+# Largest new file that an agent may create in one change. A larger file is
+# usually generated code or a copied block. Split it, or declare it as generated.
+max_new_file_lines: 300
+
+# Not counted: the reviewer does not read these line by line. They are still
+# listed in the evidence summary.
+excluded:
+  - "specs/**"                     # the specification itself is reviewed at gate 1
+  - "governance/exceptions/**"
+  - "**/package-lock.json"
+  - "**/pnpm-lock.yaml"
+  - "**/yarn.lock"
+  - "**/poetry.lock"
+  - "**/uv.lock"
+  - "**/Pipfile.lock"
+  - "**/packages.lock.json"
+  - "**/*.snap"
+  - "**/*.svg"
+  - "**/*.png"
+  - "**/*.jpg"
+
+# Generated files: list them in section 7 of the specification, in the row
+# "Generated files", with the command that produces them. Then CI does not
+# count their lines, and the evidence summary asks the reviewer to check the
+# generator and its input instead.

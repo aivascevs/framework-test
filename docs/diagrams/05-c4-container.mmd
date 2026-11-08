@@ -1,0 +1,41 @@
+---
+title: "C4 Level 2 — Containers: governance repository and demonstrator"
+---
+flowchart TB
+    author["<b>Change author / agent operator</b><br/>[Person]"]
+    reviewer["<b>Reviewer / code owner</b><br/>[Person]"]
+
+    subgraph repo["Governance repository  [software system boundary]"]
+        direction TB
+        guidance["<b>Governance artefacts</b><br/>[Markdown, YAML]<br/>Policy, tool register, risk and capability<br/>guide, spec and PR templates — Advisory"]
+        agentcfg["<b>Agent skills, agents and settings</b><br/>[AGENTS.md, .claude/skills, .claude/agents,<br/>.claude/settings.json, .vscode/]<br/>Skills advisory. Settings act<br/>only inside the agent runtime"]
+        app["<b>Sample application and fixtures</b><br/>[Python]<br/>Synthetic data only"]
+        ci["<b>CI validation workflow</b><br/>[GitHub Actions + scripts]<br/>Detects findings. Does not<br/>block by itself"]
+        evidence["<b>Per-change evidence</b><br/>[PR record + CI artifact]<br/>Not a central or<br/>tamper-proof store"]
+    end
+
+    runtime["<b>Agent runtime</b><br/>[External: Claude Code / Copilot]<br/>Sandbox covers shell commands only"]
+    model["<b>Model provider</b><br/>[External system]"]
+    host["<b>Source-control host</b><br/>[External system]<br/>Ruleset, CODEOWNERS,<br/>required checks, runners"]
+    adv["<b>Advisory and licence data</b><br/>[External system]"]
+
+    author -- "/new-change: approves spec and plan" --> guidance
+    author -- "starts with approved profile" --> runtime
+    agentcfg -- "loaded by" --> runtime
+    runtime -- "sends permitted context" --> model
+    runtime -- "edits within boundary" --> app
+    host -- "runs on pull request" --> ci
+    ci -- "queries" --> adv
+    ci -- "writes summary" --> evidence
+    reviewer -- "approves or rejects" --> host
+    host -- "holds approval<br/>and merge record" --> evidence
+
+    classDef person fill:#08427b,stroke:#052e56,color:#fff
+    classDef system fill:#1168bd,stroke:#0b4884,color:#fff
+    classDef container fill:#438dd5,stroke:#2e6295,color:#fff
+    classDef component fill:#85bbf0,stroke:#5d82a8,color:#000
+    classDef external fill:#999999,stroke:#6b6b6b,color:#fff
+    class author,reviewer person
+    class guidance,agentcfg,app,ci,evidence container
+    class runtime,model,host,adv external
+    style repo fill:#ffffff,stroke:#444444,stroke-dasharray:6 4

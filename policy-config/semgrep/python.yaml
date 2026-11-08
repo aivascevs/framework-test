@@ -1,0 +1,94 @@
+# C4 — Self-written Semgrep rules for Python (the sample application).
+# No Semgrep registry rules are copied here: registry rules have their own
+# licence. Each rule has a test in tests/fixtures/semgrep/python.py
+# (run: semgrep --test --config policy-config/semgrep tests/fixtures/semgrep).
+# metadata.control links the finding to a framework requirement.
+rules:
+  - id: python-sql-built-from-strings
+    languages: [python]
+    severity: ERROR
+    message: >-
+      SQL text is built from a value (f-string, concatenation, % or format).
+      Pass the value as a query parameter.
+    metadata: { cwe: "CWE-89", control: C4, requirement: SEC }
+    # metavariable-pattern also matches adjacent f-strings over several lines,
+    # which a plain pattern missed (found by evaluation scenario S06).
+    patterns:
+      - pattern-either:
+          - pattern: $CUR.execute($Q, ...)
+          - pattern: $CUR.executemany($Q, ...)
+          - pattern: $CUR.executescript($Q)
+      - metavariable-pattern:
+          metavariable: $Q
+          patterns:
+            - pattern-either:
+                - pattern: f"..."
+                - pattern: '"..." + $X'
+                - pattern: '"..." % $X'
+                - pattern: '"...".format(...)'
+
+  - id: python-dynamic-code-execution
+    languages: [python]
+    severity: ERROR
+    message: "eval() or exec() runs dynamic code. Remove it."
+    metadata: { cwe: "CWE-95", control: C4, requirement: SEC }
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: exec(...)
+
+  - id: python-subprocess-shell
+    languages: [python]
+    severity: ERROR
+    message: "subprocess with shell=True can run injected commands. Pass a list of arguments without a shell."
+    metadata: { cwe: "CWE-78", control: C4, requirement: SEC }
+    pattern-either:
+      - pattern: subprocess.$FUNC(..., shell=True, ...)
+      - pattern: os.system(...)
+
+  - id: python-weak-hash
+    languages: [python]
+    severity: ERROR
+    message: "MD5 and SHA-1 are not suitable for security purposes. Use SHA-256 or better."
+    metadata: { cwe: "CWE-327", control: C4, requirement: SEC }
+    patterns:
+      - pattern-either:
+          - pattern: hashlib.md5(...)
+          - pattern: hashlib.sha1(...)
+      - pattern-not: hashlib.$H(..., usedforsecurity=False, ...)
+
+  - id: python-tls-verification-disabled
+    languages: [python]
+    severity: ERROR
+    message: "TLS certificate verification is off. Remove verify=False."
+    metadata: { cwe: "CWE-295", control: C4, requirement: SEC }
+    pattern: requests.$FUNC(..., verify=False, ...)
+
+  - id: python-hardcoded-credential
+    languages: [python]
+    severity: ERROR
+    message: "A credential-like value is in the source code. Read it from configuration or a secret store."
+    metadata: { cwe: "CWE-798", control: C3, requirement: SEC }
+    patterns:
+      - pattern: $NAME = "..."
+      - pattern-not: $NAME = ""
+      - metavariable-regex:
+          metavariable: $NAME
+          regex: (?i)^[\w.]*(password|passwd|secret|api_?key|access_?token|private_?key)[\w.]*$
+
+  - id: python-personal-data-in-logs
+    languages: [python]
+    severity: ERROR
+    message: >-
+      A value that looks like personal data or a secret goes to a log.
+      Mask it (for example mask_email) or remove it.
+    metadata: { cwe: "CWE-532", control: C3, requirement: DATA }
+    patterns:
+      - pattern-either:
+          - pattern: $LOG.$METHOD(..., $ARG, ...)
+          - pattern: print(..., $ARG, ...)
+      - metavariable-regex:
+          metavariable: $METHOD
+          regex: ^(debug|info|warning|warn|error|exception|critical|log)$
+      - metavariable-regex:
+          metavariable: $ARG
+          regex: (?i)^[\w.]*(email|phone|personal_code|iban|password|token|birth)[\w.]*$

@@ -1,0 +1,75 @@
+# A7 — Agent configuration baseline.
+# CI (scripts/check_agent_config.py, job "Change guardrails") compares the agent
+# settings in the repository with this file. A change that weakens a setting
+# fails the check. To change the baseline itself, change this file in the same
+# pull request: CODEOWNERS review applies to policy-config/.
+version: 1
+
+claude_code:
+  file: .claude/settings.json
+  required:                                  # dotted key: exact value
+    permissions.defaultMode: plan
+    permissions.disableBypassPermissionsMode: disable
+    sandbox.enabled: true
+    sandbox.failIfUnavailable: true
+    sandbox.allowUnsandboxedCommands: false
+    enableAllProjectMcpServers: false
+  deny_must_include:
+    - "Read(.env)"
+    - "Read(./secrets/**)"
+    - "Bash(git push *)"
+    - "Bash(gh pr merge *)"
+    - "Bash(curl *)"
+    - "Bash(wget *)"
+  ask_or_deny_must_include:
+    - "Edit(./governance/**)"
+    - "Edit(./policy-config/**)"
+    - "Edit(./.github/**)"
+  allow_must_not_match:                      # regular expressions
+    - '^Bash$'
+    - '^Bash\(\*\)$'
+    - '^Bash\((curl|wget|sudo|rm|git push|gh pr merge)'
+    - '^(Edit|Write)(\(\*\*?\))?$'
+    - '^WebFetch$'
+    - '^mcp__'
+  allowed_domains_max:                       # sandbox.network.allowedDomains must be a subset
+    - pypi.org
+    - files.pythonhosted.org
+    - registry.npmjs.org
+    - api.nuget.org
+    - api.osv.dev
+  hooks_must_include:                        # event: script path in the command
+    UserPromptSubmit: .claude/hooks/prompt_guard.py
+    PreToolUse: .claude/hooks/scope_guard.py
+
+vscode:
+  file: .vscode/settings.json
+  required:
+    chat.agent.sandbox.enabled: "on"
+    chat.agent.sandbox.allowUnsandboxedCommands: false
+    chat.agent.sandbox.network.allowLocalNetwork: false
+    chat.tools.global.autoApprove: false
+  auto_approve_must_be_false:                # keys in chat.tools.terminal.autoApprove
+    - '/^git push\b/'
+    - '/^gh (pr merge|release)\b/'
+    - '/^(curl|wget)\b/'
+    - '/^(pip|npm|pnpm|yarn) (install|add)\b/'
+    - '/^(rm|chmod|sudo)\b/'
+  auto_approve_true_must_not_match:          # regular expressions on keys set to true
+    - '^/\^?\.\*'                            # match-all rules
+    - 'curl|wget|sudo|git push|merge'
+  allowed_domains_max:
+    - pypi.org
+    - files.pythonhosted.org
+    - registry.npmjs.org
+    - api.nuget.org
+    - api.osv.dev
+
+agents:                                      # subagents that must stay read-only
+  folder: .claude/agents
+  read_only: [planner, reviewer]
+  read_only_tools: [Read, Grep, Glob]
+
+forbidden_files:                             # MCP configuration is not part of the baseline (A5)
+  - .mcp.json
+  - .vscode/mcp.json

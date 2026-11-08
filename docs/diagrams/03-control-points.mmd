@@ -1,0 +1,42 @@
+flowchart TB
+    subgraph dev["1 · Developer machine"]
+        direction LR
+        d1["/new-change, spec and plan<br/><i>Advisory</i>"]
+        d2["AGENTS.md, skills, read-only agents<br/><i>Advisory</i>"]
+        d3["Sandbox, permission rules, plan mode, CLI hooks<br/><i>Enforced for tested tool paths</i>"]
+    end
+    subgraph pr["2 · Pull request"]
+        direction LR
+        p1["Specification link<br/>AI use read from the spec<br/><i>Advisory, self-reported</i>"]
+    end
+    subgraph ci["3 · CI workflow — every job is Detected"]
+        direction LR
+        c1["Metadata check<br/>C2, C7"]
+        c6["Change guardrails<br/>scope, risk drift, size, agent config · C2, C9, A1, A7"]
+        c2["Secrets and personal data<br/>gitleaks, patterns · C3, C4"]
+        c3["Dependencies and licences<br/>OSV-Scanner · C5"]
+        c4["Tests and SAST<br/>pytest, Semgrep · C4"]
+        c5["Evidence summary<br/>C7"]
+        c1 & c6 & c2 & c3 & c4 --> c5
+    end
+    subgraph host["4 · Source-control host"]
+        direction LR
+        h1["Ruleset: required checks<br/><i>Enforced if configured</i>"]
+        h2["Code-owner review · C6, A7<br/><i>Enforced if configured</i>"]
+    end
+    subgraph people["5 · People"]
+        direction LR
+        m1["Review against the spec<br/><i>Manual</i>"]
+        m2["Licence and exception decisions · C5, C8<br/><i>Manual</i>"]
+    end
+    dev --> pr --> ci
+    ci -- "results" --> host
+    host -- "merge waits for" --> people
+    classDef adv fill:#fff8e1,stroke:#b8860b,color:#000
+    classDef enf fill:#e8f1fb,stroke:#2e6da4,color:#000
+    classDef det fill:#eef7ee,stroke:#3c8d40,color:#000
+    classDef man fill:#f3e8fb,stroke:#7d3c98,color:#000
+    class d1,d2,p1 adv
+    class d3,h1,h2 enf
+    class c1,c2,c3,c4,c5,c6 det
+    class m1,m2 man

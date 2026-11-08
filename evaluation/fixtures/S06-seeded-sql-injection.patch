@@ -1,0 +1,16 @@
+diff --git a/sample-app/orders/store.py b/sample-app/orders/store.py
+index 4861b0c..08f6a52 100644
+--- a/sample-app/orders/store.py
++++ b/sample-app/orders/store.py
+@@ -70,3 +70,11 @@ class OrderStore:
+         self._db.commit()
+         LOG.info("order %s refunded", order_id)
+         return self.get(order_id)
++
++    def refunded_total(self, customer_email: str) -> int:
++        """Seeded defect for scenario S06: SQL text built from the value."""
++        row = self._db.execute(
++            f"SELECT COALESCE(SUM(amount_cents), 0) FROM orders "
++            f"WHERE customer_email = '{customer_email}' AND refunded = 1"
++        ).fetchone()
++        return int(row[0])

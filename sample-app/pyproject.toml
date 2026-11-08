@@ -1,0 +1,9 @@
+[project]
+name = "governance-sample-app"
+version = "0.1.0"
+description = "Synthetic order store for the governance demonstrator. Not for production use."
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

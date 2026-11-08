@@ -1,0 +1,32 @@
+---
+title: "C4 Level 1 — System context: governed AI-assisted change workflow"
+---
+flowchart TB
+    author["<b>Change author / agent operator</b><br/>[Person]<br/>Writes the specification, selects the<br/>capability profile, is accountable"]
+    gov["<b>Governance or security owner</b><br/>[Person]<br/>Maintains policy, tool register,<br/>risk classes and checks"]
+    reviewer["<b>Reviewer / code owner</b><br/>[Person]<br/>Approves or rejects. Records licence<br/>and exception decisions"]
+
+    workflow["<b>Governed change workflow</b><br/>[Software system — this repository]<br/>Governance artefacts, specifications, agent<br/>instructions, CI checks, per-change evidence"]
+
+    agent["<b>AI coding tool</b><br/>[External system]<br/>Claude Code or GitHub Copilot. Enforces<br/>sandbox and permissions for some tool paths"]
+    model["<b>Model provider</b><br/>[External system]<br/>Receives the context the tool sends"]
+    host["<b>Source-control and CI host</b><br/>[External system]<br/>GitHub. Runs CI. Enforces the<br/>ruleset only as configured"]
+    adv["<b>Advisory and licence data</b><br/>[External system]<br/>OSV.dev, deps.dev"]
+
+    gov -- "maintains policy and controls" --> workflow
+    author -- "writes specification,<br/>opens pull request" --> workflow
+    author -- "starts and supervises" --> agent
+    agent -- "sends permitted context" --> model
+    agent -- "proposes changes within<br/>granted capability" --> workflow
+    workflow -- "branches and<br/>pull requests" --> host
+    host -- "queries during checks" --> adv
+    reviewer -- "reviews and approves" --> host
+
+    classDef person fill:#08427b,stroke:#052e56,color:#fff
+    classDef system fill:#1168bd,stroke:#0b4884,color:#fff
+    classDef container fill:#438dd5,stroke:#2e6295,color:#fff
+    classDef component fill:#85bbf0,stroke:#5d82a8,color:#000
+    classDef external fill:#999999,stroke:#6b6b6b,color:#fff
+    class author,gov,reviewer person
+    class workflow system
+    class agent,model,host,adv external
