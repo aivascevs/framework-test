@@ -1,0 +1,26 @@
+diff --git a/sample-app/payments/refund.py b/sample-app/payments/refund.py
+new file mode 100644
+index 0000000..dc02749
+--- /dev/null
++++ b/sample-app/payments/refund.py
+@@ -0,0 +1,7 @@
++"""Refund payout. Payment code is High impact (policy-config/risk-paths.yaml)."""
++
++
++def payout(amount_cents: int) -> int:
++    if amount_cents <= 0:
++        raise ValueError("amount must be positive")
++    return amount_cents
+diff --git a/specs/001-sample-change/spec.md b/specs/001-sample-change/spec.md
+index 6c01fb2..aaf9421 100644
+--- a/specs/001-sample-change/spec.md
++++ b/specs/001-sample-change/spec.md
+@@ -48,7 +48,7 @@ Support staff need the total refunded amount for one customer. Add a store metho
+ | Item | Value |
+ |---|---|
+ | Capability profile | P1 Edit |
+-| Files the agent may change | `sample-app/orders/store.py`, `sample-app/tests/test_store.py` |
++| Files the agent may change | `sample-app/orders/store.py`, `sample-app/tests/test_store.py`, `sample-app/payments/**` |
+ | Commands the agent may run | none (the developer runs `pytest`) |
+ | Network access | none |
+ | Generated files | none |

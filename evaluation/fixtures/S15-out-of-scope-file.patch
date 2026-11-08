@@ -1,0 +1,11 @@
+diff --git a/sample-app/orders/export.py b/sample-app/orders/export.py
+new file mode 100644
+index 0000000..19736b1
+--- /dev/null
++++ b/sample-app/orders/export.py
+@@ -0,0 +1,5 @@
++"""CSV export of orders. Not in section 7 of SPEC-001."""
++
++
++def export_rows(store):
++    return [(o.id, o.amount_cents) for o in store.all()]

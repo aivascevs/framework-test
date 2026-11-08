@@ -1,0 +1,41 @@
+{
+  // Capability profile baseline for GitHub Copilot agent mode in VS Code.
+  // Workspace settings are ADVISORY for the developer: user and managed
+  // settings can change them. Use Copilot managed settings to require them.
+  // See agent/README.md for what each setting enforces and what to test.
+
+  // Instructions, skills and agents. VS Code also reads .claude/skills and .claude/agents.
+  // Plan gate: start each change with /new-change, then let the "planner" agent (read-only)
+  // write the plan. Claude Code uses permissions.defaultMode "plan" for the same gate.
+  // Hooks in .claude/settings.json do not run here (agent/README.md, section 5).
+  "chat.useAgentsMdFile": true,
+
+  // A1-A3: agent sandbox for terminal commands (preview)
+  "chat.agent.sandbox.enabled": "on",
+  "chat.agent.sandbox.allowUnsandboxedCommands": false,
+  "chat.agent.sandbox.network.allowNetwork": true,
+  "chat.agent.sandbox.network.allowLocalNetwork": false,
+  "chat.agent.sandbox.network.allowedDomains": [
+    "pypi.org", "files.pythonhosted.org", "registry.npmjs.org", "api.nuget.org", "api.osv.dev"
+  ],
+  "chat.agent.sandbox.fileSystem.userConfiguredPaths": {
+    "readwritePaths": [],
+    "readonlyPaths": [],
+    "deniedPaths": ["~/.ssh", "~/.aws", "~/.config/gh"]
+  },
+
+  // A2: approval for terminal commands. 'false' asks for approval; it does not block.
+  "chat.tools.global.autoApprove": false,
+  "chat.tools.terminal.enableAutoApprove": true,
+  "chat.tools.terminal.autoApprove": {
+    "/^git push\\b/": false,
+    "/^gh (pr merge|release)\\b/": false,
+    "/^(curl|wget)\\b/": false,
+    "/^(pip|npm|pnpm|yarn) (install|add)\\b/": false,
+    "/^(rm|chmod|sudo)\\b/": false,
+    "/^(python -m )?pytest\\b/": true,
+    "/^git (status|diff|log)\\b/": true,
+    "/^python \\.claude/skills/(sensitive-data-guard/scripts/scan_sensitive|dependency-check/scripts/check_package)\\.py\\b/": true,
+    "/^python scripts/check_guardrails\\.py\\b/": true
+  }
+}

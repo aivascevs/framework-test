@@ -1,0 +1,11 @@
+flowchart TB
+    A["<b>0 Prepare</b><br/>policy, roles, approved tools<br/><code>governance/</code>"] --> B["<b>1 Intake and classify</b><br/>risk class, data class, AI use<br/><code>spec.md</code> front matter"]
+    B --> C["<b>2 Specify and plan</b><br/>acceptance, SEC / DATA / LIC<br/><code>spec.md</code>, <code>plan.md</code>"]
+    C --> D["<b>3 Set capability</b><br/>minimum profile P0–P3<br/><code>.claude/</code>, <code>.vscode/</code>"]
+    D --> E["<b>4 Execute</b><br/>AI works inside the boundary<br/><code>AGENTS.md</code>, skills"]
+    E --> F["<b>5 Verify independently</b><br/>CI checks, findings triage<br/><code>governance.yml</code>"]
+    F -- "fail or unresolved" --> E
+    F -- "pass or accepted exception" --> G["<b>6 Human approval</b><br/>review against the spec<br/><code>CODEOWNERS</code>, ruleset"]
+    G -- "changes requested" --> E
+    G -- "approved" --> H["<b>7 Operate and feed back</b><br/>evidence, incidents, lessons<br/>evidence summary, exceptions"]
+    H -.-> B

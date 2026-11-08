@@ -1,0 +1,41 @@
+# =============================================================================
+# Weekly governance reminders (C1, C8)
+# -----------------------------------------------------------------------------
+# Lists exception records and scanner overrides that expire within 14 days,
+# exception drafts without an approver, and the tool register review. Opens
+# one issue, or updates it. Nobody runs a script by hand.
+# =============================================================================
+name: governance-reminders
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"     # Mondays 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  reminders:
+    name: Governance reminders
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with: { python-version: "3.12" }
+      - run: pip install pyyaml==6.0.3
+      - name: Collect due items
+        run: python scripts/reminders.py --days 14 --out reminders.md
+      - name: Open or update the reminder issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: "Governance reminders"
+        run: |
+          [ -s reminders.md ] || { echo "Nothing is due."; exit 0; }
+          number=$(gh issue list --state open --search "in:title \"$TITLE\"" --json number --jq '.[0].number')
+          if [ -n "$number" ]; then
+            gh issue edit "$number" --body-file reminders.md
+          else
+            gh issue create --title "$TITLE" --body-file reminders.md
+          fi

@@ -1,0 +1,8 @@
+# SYNTHETIC FIXTURE for scenario S08. Do NOT install these packages.
+# requests 2.19.0 has published advisories (for example CVE-2018-18074 and CVE-2023-32681).
+iniconfig==2.3.1
+packaging==26.3
+pluggy==1.7.0
+Pygments==2.21.0
+pytest==9.1.1
+requests==2.19.0

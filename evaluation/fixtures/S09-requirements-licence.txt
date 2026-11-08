@@ -1,0 +1,8 @@
+# SYNTHETIC FIXTURE for scenario S09. Do NOT install this package for the test.
+# paramiko 5.1.0 declares the licence LGPL-2.1, which is not in policy-config/allowed-licenses.txt.
+iniconfig==2.3.1
+packaging==26.3
+pluggy==1.7.0
+Pygments==2.21.0
+pytest==9.1.1
+paramiko==5.1.0

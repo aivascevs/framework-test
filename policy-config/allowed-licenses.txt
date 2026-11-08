@@ -1,0 +1,17 @@
+# C5 — SPDX licence allowlist for dependencies (one identifier per line).
+# CI passes these to OSV-Scanner (--licenses). A dependency with any other
+# licence, or with no licence data, is reported as a finding.
+# A finding needs a human decision (governance/exception-template.md).
+# These identifiers are EXAMPLES. Agree the list with your legal or IP specialist.
+MIT
+MIT-0
+Apache-2.0
+BSD-2-Clause
+BSD-3-Clause
+ISC
+0BSD
+Zlib
+Python-2.0
+PSF-2.0
+Unlicense
+CC0-1.0

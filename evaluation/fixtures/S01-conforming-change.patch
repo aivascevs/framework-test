@@ -1,0 +1,48 @@
+diff --git a/sample-app/orders/store.py b/sample-app/orders/store.py
+index 4861b0c..0d75191 100644
+--- a/sample-app/orders/store.py
++++ b/sample-app/orders/store.py
+@@ -70,3 +70,13 @@ class OrderStore:
+         self._db.commit()
+         LOG.info("order %s refunded", order_id)
+         return self.get(order_id)
++
++    def refunded_total(self, customer_email: str) -> int:
++        """Return the refunded amount in cents for one customer (SPEC-001)."""
++        row = self._db.execute(
++            "SELECT COALESCE(SUM(amount_cents), 0) FROM orders "
++            "WHERE customer_email = ? AND refunded = 1",
++            (customer_email,),
++        ).fetchone()
++        LOG.info("refunded total requested for %s", mask_email(customer_email))
++        return int(row[0])
+diff --git a/sample-app/tests/test_store.py b/sample-app/tests/test_store.py
+index 973085c..0039105 100644
+--- a/sample-app/tests/test_store.py
++++ b/sample-app/tests/test_store.py
+@@ -47,3 +47,25 @@ def test_logs_do_not_contain_email(caplog):
+     caplog.set_level("INFO")
+     OrderStore().create("ana@example.test", 700)
+     assert "ana@example.test" not in caplog.text
++
++
++def test_refunded_total_sums_refunded_orders_only():
++    store = OrderStore()
++    a = store.create("ana@example.test", 1000)
++    store.create("ana@example.test", 300)
++    b = store.create("ana@example.test", 200)
++    store.refund(a.id)
++    store.refund(b.id)
++    assert store.refunded_total("ana@example.test") == 1200
++
++
++def test_refunded_total_without_refunds_is_zero():
++    store = OrderStore()
++    store.create("ben@example.test", 900)
++    assert store.refunded_total("ben@example.test") == 0
++
++
++def test_refunded_total_does_not_log_email(caplog):
++    caplog.set_level("INFO")
++    OrderStore().refunded_total("ana@example.test")
++    assert "ana@example.test" not in caplog.text

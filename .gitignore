@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+evidence/
+metadata.json
+.env
+.env.*
+secrets/
+.claude/settings.local.json
+CLAUDE.local.md
+.active-spec

@@ -1,0 +1,26 @@
+flowchart TB
+    change(["AI-assisted change"])
+    change --> risk["<b>Change risk class</b><br/>Routine · Elevated · High impact · Restricted<br/><i>set by a person</i>"]
+    change --> cap["<b>Tool capability profile</b><br/>P0 Suggest · P1 Edit · P2 Execute · P3 Connected<br/><i>set in the specification</i>"]
+    risk -- "Restricted" --> stop["No delegation to AI<br/>human process or approved exception"]
+    risk -- "sets review and<br/>verification effort" --> core
+    cap -- "always" --> core
+    cap -- "P1 to P3" --> ext
+    core["<b>Core controls C1–C9</b><br/>tools and data · specification · data minimisation<br/>verification · dependencies and licences<br/>human review · evidence · exceptions · reviewability"]
+    ext["<b>Agentic extensions A1–A9</b><br/>files · commands · network · credentials · MCP<br/>untrusted content · configuration · autonomy · merge and deploy"]
+    core --> modes
+    ext --> modes
+    subgraph modes["Every control states its assurance mode"]
+        direction LR
+        enf["<b>Enforced</b><br/>a tested limit stops it"]
+        det["<b>Detected</b><br/>a check reports it"]
+        adv["<b>Advisory</b><br/>an instruction asks for it"]
+        man["<b>Manual</b><br/>a person decides"]
+        enf ~~~ det ~~~ adv ~~~ man
+    end
+    classDef stopc fill:#fdecea,stroke:#c0392b,color:#000
+    classDef corec fill:#e8f1fb,stroke:#2e6da4,color:#000
+    classDef extc fill:#eef7ee,stroke:#3c8d40,color:#000
+    class stop stopc
+    class core corec
+    class ext extc

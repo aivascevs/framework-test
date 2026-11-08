@@ -1,0 +1,82 @@
+# C4 — Self-written Semgrep rules for C#. Tests: tests/fixtures/semgrep/csharp.cs
+# No Semgrep registry rules are copied here.
+rules:
+- id: csharp-sql-built-from-strings
+  languages:
+  - csharp
+  severity: ERROR
+  message: SQL text is built from strings or interpolation. Use parameters (SqlParameter, FromSqlInterpolated,
+    Dapper parameters).
+  metadata:
+    cwe: CWE-89
+    control: C4
+    requirement: SEC
+  pattern-either:
+  - pattern: new SqlCommand($"...", ...)
+  - pattern: new SqlCommand("..." + $X, ...)
+  - pattern: $DB.FromSqlRaw($"...", ...)
+  - pattern: $DB.FromSqlRaw("..." + $X, ...)
+  - pattern: $DB.ExecuteSqlRaw($"...", ...)
+  - pattern: $DB.ExecuteSqlRaw("..." + $X, ...)
+- id: csharp-weak-hash
+  languages:
+  - csharp
+  severity: ERROR
+  message: MD5 / SHA1 are not suitable for security purposes. Use SHA-256 or better; for passwords use
+    a password hasher.
+  metadata:
+    cwe: CWE-327
+    control: C4
+    requirement: SEC
+  pattern-either:
+  - pattern: MD5.Create(...)
+  - pattern: SHA1.Create(...)
+  - pattern: new MD5CryptoServiceProvider(...)
+  - pattern: new SHA1Managed(...)
+- id: csharp-certificate-validation-disabled
+  languages:
+  - csharp
+  severity: ERROR
+  message: TLS certificate validation is disabled. Remove the callback that always returns true.
+  metadata:
+    cwe: CWE-295
+    control: C4
+    requirement: SEC
+  pattern-either:
+  - pattern: $H.ServerCertificateCustomValidationCallback = (...) => true;
+  - pattern: ServicePointManager.ServerCertificateValidationCallback = (...) => true;
+- id: csharp-hardcoded-credential
+  languages:
+  - csharp
+  severity: ERROR
+  message: A credential-like value is hard-coded. Read it from configuration or a secret store.
+  metadata:
+    cwe: CWE-798
+    control: C3
+    requirement: SEC
+  patterns:
+  - pattern-either:
+    - pattern: $TYPE $NAME = "...";
+    - pattern: $NAME = "...";
+  - pattern-not: $TYPE $NAME = "";
+  - metavariable-regex:
+      metavariable: $NAME
+      regex: (?i).*(password|passwd|pwd|secret|apikey|api_key|accesstoken|access_token|connectionstring).*
+- id: csharp-personal-data-in-logs
+  languages:
+  - csharp
+  severity: WARNING
+  message: A value that looks like personal data or a secret is written to a log. Mask it or remove it
+    (GDPR data minimisation; DATA# requirements).
+  metadata:
+    cwe: CWE-532
+    control: C3
+    requirement: DATA
+  patterns:
+  - pattern: $LOGGER.$METHOD(..., $ARG, ...)
+  - metavariable-regex:
+      metavariable: $METHOD
+      regex: ^(Log\w*|log|info|warn|error|debug|trace)$
+  - metavariable-regex:
+      metavariable: $ARG
+      regex: (?i).*(email|e_mail|phone|ssn|personalcode|personal_code|iban|password|token|birthdate|dateofbirth).*

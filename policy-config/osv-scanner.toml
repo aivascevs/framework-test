@@ -1,0 +1,20 @@
+# C5 / C8 — OSV-Scanner configuration (passed with --config in CI).
+#
+# Record each accepted finding here AND in an exception record
+# (governance/exceptions/EXC-NNN-*.md). Every entry needs a reason and an
+# expiry date. After the date, the entry stops working and the check fails
+# again, so the exception must be reviewed.
+#
+# Examples (keep them commented out):
+#
+# [[IgnoredVulns]]
+# id = "GHSA-xxxx-xxxx-xxxx"
+# ignoreUntil = 2026-12-31
+# reason = "EXC-001: code path not reachable; fix planned in SPEC-014"
+#
+# [[PackageOverrides]]
+# name = "example-package"
+# ecosystem = "PyPI"
+# license.override = ["MIT"]
+# effectiveUntil = 2026-12-31
+# reason = "EXC-002: licence data missing in deps.dev; MIT confirmed from upstream LICENSE"

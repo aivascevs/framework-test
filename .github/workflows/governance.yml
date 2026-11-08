@@ -1,0 +1,180 @@
+# =============================================================================
+# Governance checks for AI-assisted changes (C2, C3, C4, C5, C7, A1, A7)
+# -----------------------------------------------------------------------------
+# Every job DETECTS and reports. A job blocks a merge only when the ruleset
+# (.github/ruleset.json) marks it as a required status check.
+# Tool versions are pinned. Downloads are checksum-verified. Actions are
+# pinned to commit SHAs (the tag is in the comment).
+# =============================================================================
+name: governance
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: governance-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+  SEMGREP_VERSION: "1.180.0"
+  GITLEAKS_VERSION: "8.30.1"
+  OSV_SCANNER_VERSION: "2.7.0"
+  # Folder that OSV-Scanner reads (recursive). The framework repository scans only the
+  # sample application, because evaluation/fixtures holds bad manifests on purpose.
+  # setup.sh and setup.ps1 set this to "." in a target project.
+  DEPENDENCY_SCAN_PATH: "sample-app"
+
+jobs:
+  # ---------------------------------------------------------------- C2, C7
+  metadata:
+    name: Governance metadata
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with: { python-version: "${{ env.PYTHON_VERSION }}" }
+      - run: pip install pyyaml==6.0.3
+      - name: Read risk class, AI use and data class from the linked specification
+        run: python scripts/check_metadata.py --event "$GITHUB_EVENT_PATH"
+
+  # ---------------------------------------------------------------- C2, C4, A1, A7
+  guardrails:
+    name: Change guardrails
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with: { python-version: "${{ env.PYTHON_VERSION }}" }
+      - run: pip install pyyaml==6.0.3
+      - name: Scope, risk-class drift, removed tests, suppressions, governance files
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python scripts/check_guardrails.py --event "$GITHUB_EVENT_PATH" --base "$BASE_SHA" --head "$HEAD_SHA"
+      - name: Agent configuration is not weaker than the baseline
+        if: always()
+        run: python scripts/check_agent_config.py
+
+  # ---------------------------------------------------------------- C3, C4
+  secrets:
+    name: Secrets and personal data
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { fetch-depth: 0 }
+      - name: Install gitleaks CLI (MIT; not the gitleaks-action)
+        run: |
+          f="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}"
+          curl -sSfLO "$base/$f"
+          curl -sSfL "$base/gitleaks_${GITLEAKS_VERSION}_checksums.txt" | grep " $f\$" | sha256sum -c -
+          tar -xzf "$f" gitleaks && sudo mv gitleaks /usr/local/bin/
+      - name: Scan the commits of this pull request
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: gitleaks git --log-opts="${BASE_SHA}..${HEAD_SHA}" --config policy-config/gitleaks.toml --redact --no-banner
+      - name: Personal data and secrets in added lines (sensitive-data-guard patterns)
+        if: always()
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 .claude/skills/sensitive-data-guard/scripts/scan_sensitive.py --diff "${BASE_SHA}..${HEAD_SHA}"
+
+  # ---------------------------------------------------------------- C5
+  dependencies:
+    name: Dependencies and licences
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install OSV-Scanner (Apache-2.0)
+        run: |
+          base="https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}"
+          curl -sSfLO "$base/osv-scanner_linux_amd64"
+          curl -sSfL "$base/osv-scanner_SHA256SUMS" | grep " osv-scanner_linux_amd64\$" | sha256sum -c -
+          chmod +x osv-scanner_linux_amd64 && sudo mv osv-scanner_linux_amd64 /usr/local/bin/osv-scanner
+      - name: Known vulnerabilities and licence allowlist
+        run: |
+          allowed=$(grep -v '^\s*#' policy-config/allowed-licenses.txt | grep -v '^\s*$' | paste -sd, -)
+          osv-scanner scan source --recursive \
+            --config policy-config/osv-scanner.toml \
+            --licenses="$allowed" \
+            "$DEPENDENCY_SCAN_PATH"
+
+  # ---------------------------------------------------------------- C4
+  tests-sast:
+    name: Tests and SAST
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with: { python-version: "${{ env.PYTHON_VERSION }}" }
+      - name: Install pinned tools
+        run: pip install "semgrep==${SEMGREP_VERSION}" pyyaml==6.0.3
+      # PROJECT TESTS: a target project adds its own build and test steps here.
+      - name: Sample application tests (framework repository only)
+        if: hashFiles('sample-app/requirements.txt') != ''
+        working-directory: sample-app
+        run: pip install -r requirements.txt && pytest -q
+      - name: Governance script tests (framework repository only)
+        if: hashFiles('tests/test_check_metadata.py') != ''
+        run: python -m unittest discover -s tests -v
+      - name: Semgrep rule tests
+        if: hashFiles('tests/fixtures/semgrep/**') != ''
+        run: semgrep --test --metrics=off --config policy-config/semgrep tests/fixtures/semgrep
+      - name: SAST with the project rules (no registry rules, no login)
+        run: semgrep scan --config policy-config/semgrep --metrics=off --error --exclude=tests/fixtures --exclude=evaluation .
+
+  # ---------------------------------------------------------------- advisory
+  docs-style:
+    name: Documentation style (advisory)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Simplified Technical English lint (structural rules)
+        run: |
+          # Baseline 6: 'modify', 'verify' and 'delete' are kept on purpose where they are the
+          # framework's own control, principle and action names (A1, A2, principle 5).
+          # The upstream asd-ste100 skill is not linted: it quotes bad examples on purpose.
+          skills=$(ls .claude/skills/*/SKILL.md | grep -v asd-ste100)
+          # shellcheck disable=SC2086
+          python .claude/skills/asd-ste100/scripts/ste-lint.py --disable passive-voice,present-perfect --baseline 6 \
+            README.md LIMITATIONS.md AGENTS.md governance/*.md docs/*.md docs/extensions/*.md \
+            docs/diagrams/README.md agent/README.md evaluation/protocol.md $skills .claude/agents/*.md
+      - name: README diagrams match docs/diagrams sources
+        run: python scripts/sync_readme_diagrams.py --check
+
+  # ---------------------------------------------------------------- C7
+  evidence:
+    name: Evidence summary
+    needs: [metadata, guardrails, secrets, dependencies, tests-sast]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with: { python-version: "${{ env.PYTHON_VERSION }}" }
+      - run: pip install pyyaml==6.0.3
+      - name: Collect metadata and check results
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          python scripts/check_metadata.py --event "$GITHUB_EVENT_PATH" --json-out metadata.json --report-only > /dev/null
+          python scripts/check_guardrails.py --event "$GITHUB_EVENT_PATH" --base "$BASE_SHA" --head "$PR_HEAD_SHA" \
+            --json-out guardrails.json --report-only > /dev/null
+          python scripts/evidence_summary.py --metadata metadata.json --guardrails guardrails.json --out-dir evidence
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: evidence-summary
+          path: evidence/

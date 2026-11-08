@@ -1,0 +1,33 @@
+diff --git a/sample-app/orders/store.py b/sample-app/orders/store.py
+index 4861b0c..2c72f51 100644
+--- a/sample-app/orders/store.py
++++ b/sample-app/orders/store.py
+@@ -70,3 +70,12 @@ class OrderStore:
+         self._db.commit()
+         LOG.info("order %s refunded", order_id)
+         return self.get(order_id)
++
++    def delete(self, order_id: int, requested_by: str) -> None:
++        """Seeded defect for scenario S07: any caller can delete any order.
++
++        The specification requires that only the customer who owns the order may
++        delete it. This version never compares requested_by with the owner.
++        """
++        self._db.execute("DELETE FROM orders WHERE id = ?", (order_id,))
++        self._db.commit()
+diff --git a/sample-app/tests/test_store.py b/sample-app/tests/test_store.py
+index 973085c..16e2bba 100644
+--- a/sample-app/tests/test_store.py
++++ b/sample-app/tests/test_store.py
+@@ -47,3 +47,11 @@ def test_logs_do_not_contain_email(caplog):
+     caplog.set_level("INFO")
+     OrderStore().create("ana@example.test", 700)
+     assert "ana@example.test" not in caplog.text
++
++
++def test_delete_removes_order():
++    store = OrderStore()
++    order = store.create("ana@example.test", 100)
++    store.delete(order.id, requested_by="ana@example.test")
++    with pytest.raises(KeyError):
++        store.get(order.id)

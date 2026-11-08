@@ -1,0 +1,12 @@
+# C3 / C4 — gitleaks configuration (CI secrets check).
+# Uses the default gitleaks rules. The evaluation fixtures contain synthetic
+# secrets on purpose, so their folder is allowlisted. A scenario copies a
+# fixture into sample-app/ to show detection.
+title = "Governance framework secrets check"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Synthetic test material for the evaluation scenarios and rule tests"
+paths = ['''^evaluation/fixtures/''', '''^tests/fixtures/''']

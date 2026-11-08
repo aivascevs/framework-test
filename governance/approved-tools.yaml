@@ -1,0 +1,50 @@
+# =============================================================================
+# C1 — Approved tool and data-use register
+# -----------------------------------------------------------------------------
+# Owner: governance or security owner. Review at least every 6 months.
+# This file is ADVISORY. It cannot stop a person from using a personal account
+# or an unapproved tool. It becomes enforced only where tool access is
+# restricted centrally (for example, managed settings or licence assignment).
+#
+# Data classes (see governance/data-handling.md), lowest to highest:
+#   public < internal < confidential < personal < secret
+# max_data_class is the highest class that the tool may receive.
+# =============================================================================
+version: 1
+last_review: "2026-10-26"
+owner: "governance-owner"          # replace with a named person or team
+
+tools:
+  - id: claude-code
+    name: "Claude Code"
+    vendor: "Anthropic"
+    modes_permitted: [suggest, edit, execute]       # capability profiles P0–P2
+    modes_not_permitted: [connected]                # P3 needs a separate approval
+    max_data_class: internal                        # TODO: confirm against your contract
+    account_type: "organisation plan only; no personal accounts"
+    provider_terms_reviewed: "TODO: date and reference of the reviewed terms"
+    configuration: ".claude/settings.json"
+    notes: "Sandbox covers shell commands only. File tools use permission rules. See agent/README.md."
+
+  - id: github-copilot
+    name: "GitHub Copilot (VS Code agent mode, Copilot cloud agent)"
+    vendor: "GitHub"
+    modes_permitted: [suggest, edit, execute]
+    modes_not_permitted: [connected]
+    max_data_class: internal                        # TODO: confirm against your contract
+    account_type: "organisation licence only (Business or Enterprise)"
+    provider_terms_reviewed: "TODO: date and reference of the reviewed terms"
+    configuration: ".vscode/settings.json; repository Settings > Copilot > Internet access"
+    notes: "VS Code agent sandbox is preview. Cloud agent firewall covers its Bash tool only. See agent/README.md."
+
+# Tools and integrations that are NOT approved by default.
+not_approved:
+  - "Personal accounts of any AI service"
+  - "Browser chat tools for code or data above 'public'"
+  - "MCP servers (see docs/extensions/mcp.md; approve each server separately)"
+
+# Data that no tool may receive, whatever its max_data_class.
+never_send:
+  - "Production credentials, private keys and tokens"
+  - "Real personal data from production systems"
+  - "Client data that a contract excludes from third-party processing"

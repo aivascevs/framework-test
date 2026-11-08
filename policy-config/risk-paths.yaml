@@ -1,0 +1,39 @@
+# C2 — Minimum risk class by changed path.
+# Read by the new-change skill (to propose a class) and by CI
+# (scripts/check_guardrails.py, risk-class drift). A person sets the final class.
+# The class of a change is at least the highest class of any changed path.
+# Order: Routine < Elevated < High impact < Restricted.
+# Globs: '**' crosses folders, '*' stays inside one folder.
+version: 1
+
+minimum_class:
+  High impact:
+    - "**/auth/**"
+    - "**/authentication/**"
+    - "**/authorization/**"
+    - "**/crypto/**"
+    - "**/payments/**"
+    - "**/migrations/**"
+    - "**/*.sql"
+    - "infra/**"
+    - "**/Dockerfile"
+    - ".github/workflows/**"
+  Elevated:
+    - "sample-app/orders/**"          # business logic of the sample application
+    - "src/**"
+    - "app/**"
+    - "**/requirements*.txt"          # dependency manifests: new or changed dependencies
+    - "**/pyproject.toml"
+    - "**/package.json"
+    - "**/package-lock.json"
+    - "**/*.csproj"
+    - "**/Directory.Packages.props"
+    - "governance/**"                 # changing the rules
+    - "policy-config/**"
+    - "scripts/**"
+    - ".claude/**"
+    - ".vscode/**"
+    - "AGENTS.md"
+    - "CLAUDE.md"
+
+# Any path that matches no pattern above counts as Routine.
